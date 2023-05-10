@@ -23,6 +23,7 @@ exchange = ccxt.kucoin({
 
 # 매매 대상 코인의 심볼을 설정합니다.
 symbol = 'BTC/USDT'
+buy_price = 0
 
 # chandelier exit strategy에 사용되는 변수를 초기화합니다.
 period = 14
@@ -31,7 +32,7 @@ timeframe = '15m'
 
 longStopPrev = 0.0
 shortStopPrev = 0.0
-dirPrev = -1  # 올라갈떄는 1 내려갈떄는 -1
+dirPrev = 1  # 올라갈떄는 1 내려갈떄는 -1
 closePrev = -1
 
 while True:
@@ -103,8 +104,6 @@ while True:
         # 현재 잔고를 업데이트합니다.
         balance = exchange.fetch_balance()['USDT']['free']
 
-        btc_balance = exchange.fetch_balance()['BTC']['free']
-
         # 매수 또는 매도합니다.
 
         ticker = exchange.fetch_ticker(symbol)
@@ -115,10 +114,13 @@ while True:
             exchange.create_market_buy_order(symbol, amount)
             buy_price = close
             print(f"Buy: {buy_price:.2f}")
+            btc_balance = exchange.fetch_balance()['BTC']['free']
+
             # 현재 포지션과 잔고를 출력합니다.
             print('USDT:', balance)
             print(f"현재 보유중인 BTC 수량: {btc_balance:.8f}")
-        elif sellSignal and btc_balance >= 1:
+        elif sellSignal and balance < 1:
+            btc_balance = exchange.fetch_balance()['BTC']['free']
             exchange.create_market_sell_order(symbol, btc_balance)
             sell_price = close
             print(f"Sell: {sell_price:.2f}")
